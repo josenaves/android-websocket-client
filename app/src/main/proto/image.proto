@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package com.josenaves.android.websocket.client;
+
+option java_package = "com.josenaves.android.websocket.client";
+
+message Image {
+  required string id = 1;
+  required string name = 2;
+  required string date = 3;
+  required bytes image_data = 4;
+}
