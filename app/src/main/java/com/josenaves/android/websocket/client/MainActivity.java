@@ -131,6 +131,18 @@ public class MainActivity extends AppCompatActivity {
             final Image image = Image.ADAPTER.decode(buffer);
             Log.d(TAG, image.toString());
 
+            // save the file
+            String filename = StorageUtils.saveFileInExternalStorage(
+                    MainActivity.this,
+                    image.name,
+                    image.image_data.toByteArray());
+
+            if (filename == null) {
+                Log.e(TAG, "File could not be saved :(");
+            } else {
+                Log.i(TAG, "File saved in " + filename);
+            }
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
