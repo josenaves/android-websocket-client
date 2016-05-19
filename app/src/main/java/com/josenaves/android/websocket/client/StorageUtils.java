@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,11 +19,41 @@ public final class StorageUtils {
 
     private static final String PREFIX = "Android/data";
 
+    public static byte[] readFileFromExternalStorage(String filePath) {
+
+        File fileToBeRead = new File(filePath);
+        byte[] data = new byte[(int)fileToBeRead .length()];
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(filePath);
+            fis.read(data);
+            fis.close();
+            return data;
+        }
+        catch(FileNotFoundException fnf) {
+            Log.e(TAG, "Could not find path: " +  fnf.getMessage());
+        }
+        catch(IOException io){
+            Log.e(TAG, io.getMessage());
+        }
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException io){
+                    Log.e(TAG, "Error closing file: " + io.getMessage());
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Create a storage path folders based on datetime on the device
      * @return if success, the complete path for the saved file; otherwise, null
      */
-    public static String saveFileInExternalStorage(Context context, String filename, byte[] data) {
+    public static String saveFileInExternalStorage(String packageName, String filename, byte[] data) {
         Calendar cal = Calendar.getInstance();
         int year = cal.get(Calendar.YEAR);
         int month = 1 + cal.get(Calendar.MONTH);
@@ -35,7 +66,7 @@ public final class StorageUtils {
         String absolutePath = String.format("%s/%s/%s/%s/%s/%s/%s/%s/%s/%s/",
                 Environment.getExternalStorageDirectory().getAbsolutePath(),
                 PREFIX,
-                context.getApplicationContext().getPackageName(),
+                packageName,
                 year, month, day, hour, minute, second, milisecond);
 
         Log.d(TAG, absolutePath);
@@ -76,7 +107,6 @@ public final class StorageUtils {
                 }
             }
         }
-
         return null;
     }
 

@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.josenaves.android.websocket.client.data.ImagesDataSource;
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
@@ -24,6 +25,8 @@ import java.util.concurrent.TimeoutException;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private ImagesDataSource dataSource;
 
     private final AsyncHttpClient connection = AsyncHttpClient.getDefaultInstance();
     private WebSocket webSocket;
@@ -49,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
         textName = (TextView)findViewById(R.id.text_name);
         textDate = (TextView)findViewById(R.id.text_date);
         textSize = (TextView)findViewById(R.id.text_size);
+
+        // prepare database to use
+        dataSource = new ImagesDataSource(this);
 
         // connect with server
         Log.d(TAG, "Open connection with server...");
@@ -124,6 +130,10 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Decode bytes and save the data into database and image in storage
+     * @param buffer
+     */
     private void decode(byte[] buffer) {
         byte[] message = buffer;
 
@@ -131,17 +141,13 @@ public class MainActivity extends AppCompatActivity {
             final Image image = Image.ADAPTER.decode(buffer);
             Log.d(TAG, image.toString());
 
-            // save the file
-            String filename = StorageUtils.saveFileInExternalStorage(
-                    MainActivity.this,
-                    image.name,
-                    image.image_data.toByteArray());
+            // persist the image
+            dataSource.open();
+            dataSource.createImage(image);
 
-            if (filename == null) {
-                Log.e(TAG, "File could not be saved :(");
-            } else {
-                Log.i(TAG, "File saved in " + filename);
-            }
+            Log.d(TAG, "Records on database: " + dataSource.getAllImages().size());
+            dataSource.close();
+
 
             runOnUiThread(new Runnable() {
                 @Override
