@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private CoordinatorLayout coordinatorLayout;
     private FloatingActionButton fab;
+    private FloatingActionButton fabBatch;
 
     private TextView textId;
     private TextView textName;
@@ -66,15 +67,30 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (webSocket != null) {
                     webSocket.send(new byte[]{66, 77, 111, 34, 66, 11, 2, 4, 5, 66, 99, 121});
-
-//                    Snackbar.make(view, "Talking with server", Snackbar.LENGTH_SHORT)
-//                            .setAction("WebSocket", null).show();
-//
                     Log.d(TAG, "Sending random data to server");
                 }
             }
         });
         fab.setEnabled(false);
+
+        fabBatch = (FloatingActionButton) findViewById(R.id.fabSaveBatch);
+        fabBatch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (webSocket != null) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (int i = 0; i < 10; i++) {
+                                webSocket.send(new byte[]{66});
+                                Log.d(TAG, "Sending random data to server");
+                            }
+                        }
+                    }).start();
+                }
+            }
+        });
+        fabBatch.setEnabled(false);
     }
 
     private void start() {
@@ -94,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "Connected.");
                 fab.setEnabled(true);
+                fabBatch.setEnabled(true);
 
                 ws.setDataCallback(new DataCallback() {
                     @Override
@@ -135,8 +152,6 @@ public class MainActivity extends AppCompatActivity {
      * @param buffer
      */
     private void decode(byte[] buffer) {
-        byte[] message = buffer;
-
         try {
             final Image image = Image.ADAPTER.decode(buffer);
             Log.d(TAG, image.toString());
@@ -144,10 +159,8 @@ public class MainActivity extends AppCompatActivity {
             // persist the image
             dataSource.open();
             dataSource.createImage(image);
-
-            Log.d(TAG, "Records on database: " + dataSource.getAllImages().size());
+            //Log.d(TAG, "Records on database: " + dataSource.getAllImages().size());
             dataSource.close();
-
 
             runOnUiThread(new Runnable() {
                 @Override
