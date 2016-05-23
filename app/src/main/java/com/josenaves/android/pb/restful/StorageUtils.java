@@ -1,4 +1,4 @@
-package com.josenaves.android.websocket.client;
+package com.josenaves.android.pb.restful;
 
 import android.content.Context;
 import android.os.Environment;

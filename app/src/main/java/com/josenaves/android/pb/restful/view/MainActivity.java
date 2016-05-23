@@ -1,9 +1,9 @@
-package com.josenaves.android.websocket.client;
+package com.josenaves.android.pb.restful.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -12,24 +12,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.josenaves.android.websocket.client.data.ImagesDataSource;
-import com.koushikdutta.async.ByteBufferList;
-import com.koushikdutta.async.DataEmitter;
-import com.koushikdutta.async.callback.DataCallback;
-import com.koushikdutta.async.http.AsyncHttpClient;
-import com.koushikdutta.async.http.WebSocket;
-
+import com.josenaves.android.pb.restful.Image;
+import com.josenaves.android.pb.restful.R;
+import com.josenaves.android.pb.restful.api.ImageAPI;
+import com.josenaves.android.pb.restful.data.ImagesDataSource;
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private ImagesDataSource dataSource;
-
-    private final AsyncHttpClient connection = AsyncHttpClient.getDefaultInstance();
-    private WebSocket webSocket;
 
     private CoordinatorLayout coordinatorLayout;
     private FloatingActionButton fab;
@@ -39,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView textName;
     private TextView textDate;
     private TextView textSize;
+
+    private ImageAPI imageAPI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,72 +52,34 @@ public class MainActivity extends AppCompatActivity {
         // prepare database to use
         dataSource = new ImagesDataSource(this);
 
-        // connect with server
-        Log.d(TAG, "Open connection with server...");
-        start();
+        // make api client
+        imageAPI = new ImageAPI(this);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (webSocket != null) {
-                    webSocket.send(new byte[]{66, 77, 111, 34, 66, 11, 2, 4, 5, 66, 99, 121});
-                    Log.d(TAG, "Sending random data to server");
-                }
+                Log.d(TAG, "Sending random data to server");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //byte[] imageBuffer = imageAPI.getRandomImage();
+                        //decode(imageBuffer);
+                        save(imageAPI.getRandomImage());
+                    }
+                }).start();
             }
         });
-        fab.setEnabled(false);
+
 
         fabBatch = (FloatingActionButton) findViewById(R.id.fabSaveBatch);
         fabBatch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (webSocket != null) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (int i = 0; i < 10; i++) {
-                                webSocket.send(new byte[]{66});
-                                Log.d(TAG, "Sending random data to server");
-                            }
-                        }
-                    }).start();
-                }
+
             }
         });
-        fabBatch.setEnabled(false);
-    }
 
-    private void start() {
-        final String wsuri = "ws://192.168.0.16:9090";
-        connection.websocket(wsuri, null, new AsyncHttpClient.WebSocketConnectCallback() {
-            @Override
-            public void onCompleted(Exception ex, WebSocket ws) {
-                if (ex != null) {
-                    if (ex instanceof TimeoutException) {
-                        Log.e(TAG, "Timeout - server must be down :(");
-
-                        Snackbar.make(MainActivity.this.coordinatorLayout, "Error connection to server", Snackbar.LENGTH_SHORT)
-                                .setAction("WebSocket", null).show();
-                    }
-                    return;
-                }
-
-                Log.d(TAG, "Connected.");
-                fab.setEnabled(true);
-                fabBatch.setEnabled(true);
-
-                ws.setDataCallback(new DataCallback() {
-                    @Override
-                    public void onDataAvailable(DataEmitter emitter, ByteBufferList bb) {
-                        Log.d(TAG, "Got some bytes!");
-                        decode(bb.getAllByteArray());
-                        bb.recycle();
-                    }
-                });
-                webSocket = ws;
-            }
-        });
     }
 
     @Override
@@ -139,8 +96,10 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+
         if (id == R.id.action_settings) {
+            Intent prefsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(prefsIntent);
             return true;
         }
 
@@ -153,7 +112,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private void decode(byte[] buffer) {
         try {
+
             final Image image = Image.ADAPTER.decode(buffer);
+
             Log.d(TAG, image.toString());
 
             // persist the image
@@ -173,8 +134,27 @@ public class MainActivity extends AppCompatActivity {
             });
         }
         catch (IOException io) {
-            Log.e(TAG, "Error decoding message");
+            Log.e(TAG, "Error decoding message - " + io.getMessage());
         }
+    }
+
+
+    private void save(final Image image) {
+        // persist the image
+        dataSource.open();
+        dataSource.createImage(image);
+        //Log.d(TAG, "Records on database: " + dataSource.getAllImages().size());
+        dataSource.close();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textId.setText("ID: " + image.id);
+                textName.setText("Name: " + image.name);
+                textDate.setText("Date: " + image.date);
+                textSize.setText("Size: " + image.image_data.size() + " bytes");
+            }
+        });
     }
 
 }

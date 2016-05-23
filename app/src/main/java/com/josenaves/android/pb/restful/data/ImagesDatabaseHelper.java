@@ -1,4 +1,4 @@
-package com.josenaves.android.websocket.client.data;
+package com.josenaves.android.pb.restful.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

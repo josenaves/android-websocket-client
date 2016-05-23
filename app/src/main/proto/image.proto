@@ -1,8 +1,8 @@
 syntax = "proto2";
 
-package com.josenaves.android.websocket.client;
+package com.josenaves.android.pb.restful;
 
-option java_package = "com.josenaves.android.websocket.client";
+option java_package = "com.josenaves.android.pb.restful";
 
 message Image {
   required string id = 1;
