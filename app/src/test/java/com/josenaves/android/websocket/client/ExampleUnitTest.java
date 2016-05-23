@@ -1,4 +1,4 @@
-package com.josenaves.android.pb.restful;
+package com.josenaves.android.websocket.client;
 
 import org.junit.Test;
 

@@ -1,14 +1,14 @@
-# android-pb-restful
+# android-websocket-client
 
 This is PoC (Proof Of Concept) that uses Google's Protocol Buffer payloads
 encoded in binary websocket messages to exchange data with a backend written in Node.
 
 ## Requirements:
 - Java 7
-- Gradle
 - Android SDK API 23
+- Gradle
 - Square's Wire
-- Retrofit 2
+- AndroidAsync
 
 ## How to generate Java model
 

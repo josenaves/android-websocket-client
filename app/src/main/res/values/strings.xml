@@ -1,13 +1,4 @@
 <resources>
-    <string name="app_name">android-pb-restful</string>
+    <string name="app_name">android-websocket-client</string>
     <string name="action_settings">Settings</string>
-
-    <string name="title_host_config">Server settings</string>
-    <string name="title_edittext_host">Server IP address</string>
-    <string name="summary_edittext_host">Here you can configure server address</string>
-    <string name="dialog_title_host">Server host address</string>
-    <string name="title_activity_settings">Settings</string>
-    <string name="default_host">http://192.168.0.16:9090/</string>
-
-
 </resources>

@@ -1,4 +1,4 @@
-package com.josenaves.android.pb.restful.data;
+package com.josenaves.android.websocket.client.data;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,8 +7,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.josenaves.android.pb.restful.Image;
-import com.josenaves.android.pb.restful.StorageUtils;
+import com.josenaves.android.websocket.client.Image;
+import com.josenaves.android.websocket.client.StorageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
